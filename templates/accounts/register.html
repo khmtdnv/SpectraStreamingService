@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign Up - VideoHub{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto mt-12">
+    <div class="bg-gray-900 rounded-lg shadow-xl p-8 border border-gray-800">
+        <h2 class="text-3xl font-bold text-center mb-8 text-emerald-500">Create Account</h2>
+
+        <form method="post" action="{% url 'accounts:register' %}" class="space-y-6">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="bg-red-500 bg-opacity-20 border border-red-500 text-white px-4 py-3 rounded">
+                {% for error in form.non_field_errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div>
+                <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium mb-2">
+                    Username
+                </label>
+                <input type="text"
+                       name="{{ form.username.name }}"
+                       id="{{ form.username.id_for_label }}"
+                       value="{{ form.username.value|default:'' }}"
+                       class="w-full bg-black bg-opacity-50 border border-gray-700 rounded px-4 py-3 focus:outline-none focus:border-emerald-500 transition"
+                       placeholder="Choose a username"
+                       required>
+                {% if form.username.errors %}
+                <p class="mt-1 text-sm text-red-400">{{ form.username.errors.0 }}</p>
+                {% endif %}
+                {% if form.username.help_text %}
+                <p class="mt-1 text-xs text-gray-500">{{ form.username.help_text }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium mb-2">
+                    Email Address
+                </label>
+                <input type="email"
+                       name="{{ form.email.name }}"
+                       id="{{ form.email.id_for_label }}"
+                       value="{{ form.email.value|default:'' }}"
+                       class="w-full bg-black bg-opacity-50 border border-gray-700 rounded px-4 py-3 focus:outline-none focus:border-emerald-500 transition"
+                       placeholder="your.email@example.com"
+                       required>
+                {% if form.email.errors %}
+                <p class="mt-1 text-sm text-red-400">{{ form.email.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label for="{{ form.password1.id_for_label }}" class="block text-sm font-medium mb-2">
+                    Password
+                </label>
+                <input type="password"
+                       name="{{ form.password1.name }}"
+                       id="{{ form.password1.id_for_label }}"
+                       class="w-full bg-black bg-opacity-50 border border-gray-700 rounded px-4 py-3 focus:outline-none focus:border-emerald-500 transition"
+                       placeholder="Create a strong password"
+                       required>
+                {% if form.password1.errors %}
+                <p class="mt-1 text-sm text-red-400">{{ form.password1.errors.0 }}</p>
+                {% endif %}
+                {% if form.password1.help_text %}
+                <p class="mt-1 text-xs text-gray-500">{{ form.password1.help_text }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label for="{{ form.password2.id_for_label }}" class="block text-sm font-medium mb-2">
+                    Confirm Password
+                </label>
+                <input type="password"
+                       name="{{ form.password2.name }}"
+                       id="{{ form.password2.id_for_label }}"
+                       class="w-full bg-black bg-opacity-50 border border-gray-700 rounded px-4 py-3 focus:outline-none focus:border-emerald-500 transition"
+                       placeholder="Confirm your password"
+                       required>
+                {% if form.password2.errors %}
+                <p class="mt-1 text-sm text-red-400">{{ form.password2.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div class="bg-gray-800 bg-opacity-50 border border-gray-700 rounded p-4">
+                <p class="text-sm text-gray-400">
+                    <strong class="text-white">Password requirements:</strong><br>
+                    • At least 8 characters long<br>
+                    • Cannot be too similar to your username<br>
+                    • Cannot be a commonly used password
+                </p>
+            </div>
+
+            <button type="submit"
+                    class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 rounded transition">
+                Create Account
+            </button>
+        </form>
+
+        <div class="mt-6 text-center">
+            <p class="text-gray-400">
+                Already have an account?
+                <a href="{% url 'accounts:login' %}" class="text-emerald-500 hover:text-emerald-400 transition font-semibold">
+                    Login here
+                </a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -30,6 +30,10 @@ from .tasks import send_verification_email, send_password_reset_email
 User = get_user_model()
 
 
+def home_view(request):
+    return render(request, "movies/home.html")
+
+
 class UserRegistrationView(CreateView):
     """
     View for user registration.
@@ -46,7 +50,7 @@ class UserRegistrationView(CreateView):
     def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         """Redirect authenticated users to home page."""
         if request.user.is_authenticated:
-            return redirect('home')
+            return redirect('accounts:home')
         return super().dispatch(request, *args, **kwargs)
     
     def form_valid(self, form: UserRegistrationForm) -> HttpResponse:

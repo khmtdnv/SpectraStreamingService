@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Email Confirmation - VideoHub{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto mt-12">
+    <div class="bg-gray-900 rounded-lg shadow-xl p-8 border border-gray-800">
+        {% if valid_token %}
+        <div class="text-center">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-emerald-500 bg-opacity-20 rounded-full mb-4">
+                <svg class="w-8 h-8 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+            <h2 class="text-3xl font-bold mb-4 text-emerald-500">Email Confirmed!</h2>
+            <p class="text-gray-400 mb-8">
+                Your email address has been successfully verified.
+                You can now enjoy all features of VideoHub.
+            </p>
+            <a href="{% url 'accounts:login' %}"
+               class="inline-block bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-8 py-3 rounded transition">
+                Go to Login
+            </a>
+        </div>
+        {% else %}
+        <div class="text-center">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-red-500 bg-opacity-20 rounded-full mb-4">
+                <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </div>
+            <h2 class="text-3xl font-bold mb-4 text-red-500">Invalid or Expired Link</h2>
+            <p class="text-gray-400 mb-8">
+                This email confirmation link is invalid or has expired.
+                Please try registering again or contact support if you need assistance.
+            </p>
+            <div class="flex justify-center space-x-4">
+                <a href="{% url 'accounts:register' %}"
+                   class="inline-block bg-emerald-500 hover:bg-emerald-600 text-white font-semibold px-6 py-3 rounded transition">
+                    Register Again
+                </a>
+                <a href="{% url 'movies:home' %}"
+                   class="inline-block bg-gray-700 hover:bg-gray-600 text-white font-semibold px-6 py-3 rounded transition">
+                    Go Home
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

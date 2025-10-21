@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+
+{% block title %}Watch History - VideoHub{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <h1 class="text-3xl font-bold mb-8">Watch History</h1>
+
+    {% if history %}
+    <div class="space-y-4">
+        {% for item in history %}
+        <div class="bg-gray-900 rounded-lg border border-gray-800 hover:border-gray-700 transition overflow-hidden">
+            <div class="flex">
+                <!-- Movie Poster -->
+                <div class="w-48 flex-shrink-0 relative">
+                    <a href="{% url 'player:watch' item.movie.slug %}">
+                        {% if item.movie.poster %}
+                        <img src="{{ item.movie.poster.url }}"
+                             alt="{{ item.movie.title }}"
+                             class="w-full h-full object-cover">
+                        {% else %}
+                        <img src="https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=300"
+                             alt="{{ item.movie.title }}"
+                             class="w-full h-full object-cover">
+                        {% endif %}
+
+                        <!-- Progress Overlay -->
+                        <div class="absolute bottom-0 left-0 right-0 h-1 bg-gray-700">
+                            <div class="h-full bg-emerald-500"
+                                 style="width: {{ item.get_progress_percentage }}%"></div>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Movie Info -->
+                <div class="flex-1 p-6">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex-1">
+                            <a href="{% url 'player:watch' item.movie.slug %}"
+                               class="text-2xl font-semibold hover:text-emerald-500 transition">
+                                {{ item.movie.title }}
+                            </a>
+                            <p class="text-gray-400 text-sm mt-1">
+                                {{ item.movie.year }} • {{ item.movie.category.name }} • {{ item.movie.get_duration_display }}
+                            </p>
+                        </div>
+                        {% if item.completed %}
+                        <span class="bg-emerald-500 bg-opacity-20 text-emerald-500 px-3 py-1 rounded text-sm font-semibold">
+                            ✓ Completed
+                        </span>
+                        {% else %}
+                        <span class="bg-blue-500 bg-opacity-20 text-blue-500 px-3 py-1 rounded text-sm font-semibold">
+                            {{ item.get_progress_percentage }}% watched
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    {% if item.movie.description %}
+                    <p class="text-gray-400 text-sm line-clamp-2 mb-4">
+                        {{ item.movie.description|truncatewords:30 }}
+                    </p>
+                    {% endif %}
+
+                    <div class="flex items-center space-x-4">
+                        <a href="{% url 'player:watch' item.movie.slug %}"
+                           class="inline-flex items-center text-emerald-500 hover:text-emerald-400 text-sm font-semibold transition">
+                            <svg class="w-5 h-5 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
+                            </svg>
+                            {% if item.completed %}Watch Again{% else %}Continue Watching{% endif %}
+                        </a>
+                        <a href="{% url 'movies:movie_detail' item.movie.slug %}"
+                           class="text-gray-400 hover:text-white text-sm font-semibold transition">
+                            Movie Details
+                        </a>
+                        <span class="text-gray-500 text-sm ml-auto">
+                            Last watched: {{ item.last_watched|timesince }} ago
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="flex justify-center mt-12 space-x-2">
+        {% if page_obj.has_previous %}
+        <a href="?page=1"
+           class="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded transition">
+            First
+        </a>
+        <a href="?page={{ page_obj.previous_page_number }}"
+           class="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded transition">
+            Previous
+        </a>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+        <span class="px-4 py-2 bg-emerald-500 rounded font-semibold">{{ num }}</span>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+        <a href="?page={{ num }}"
+           class="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded transition">
+            {{ num }}
+        </a>
+        {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}"
+           class="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded transition">
+            Next
+        </a>
+        <a href="?page={{ page_obj.paginator.num_pages }}"
+           class="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded transition">
+            Last
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="text-center py-12 bg-gray-900 rounded-lg border border-gray-800">
+        <svg class="w-20 h-20 text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <h2 class="text-2xl font-bold mb-2">No Watch History</h2>
+        <p class="text-gray-400 mb-6">
+            You haven't watched any movies yet
+        </p>
+        <a href="{% url 'movies:home' %}"
+           class="inline-block bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded transition">
+            Browse Movies
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}VideoHub - Watch Movies Online{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    {% block extra_css %}{% endblock %}
+    <style>
+        body {
+            background-color: #141414;
+        }
+        .movie-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .movie-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
+        }
+        .category-btn {
+            transition: all 0.3s ease;
+        }
+        .category-btn.active {
+            background-color: #10b981;
+            color: white;
+        }
+        .star-rating {
+            display: inline-flex;
+            gap: 4px;
+        }
+        .star {
+            cursor: pointer;
+            color: #4b5563;
+            transition: color 0.2s;
+        }
+        .star.filled {
+            color: #fbbf24;
+        }
+        .star:hover,
+        .star:hover ~ .star {
+            color: #fbbf24;
+        }
+    </style>
+</head>
+<body class="bg-[#141414] text-white">
+
+    <!-- Header -->
+    <header class="bg-black bg-opacity-90 fixed w-full top-0 z-50 backdrop-blur-sm">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-8">
+                    <a href="#" class="text-3xl font-bold text-emerald-500">VideoHub</a>
+                    <nav class="hidden md:flex space-x-6">
+                        <a href="#" class="hover:text-gray-300 transition">Home</a>
+                        <a href="#" class="hover:text-gray-300 transition">Movies</a>
+                        <a href="#" class="hover:text-gray-300 transition">Search</a>
+                        {% if user.is_authenticated %}
+                        <a href="#" class="hover:text-gray-300 transition">Continue Watching</a>
+                        <a href="#" class="hover:text-gray-300 transition">My Ratings</a>
+                        {% endif %}
+                    </nav>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <form method="get" action="#" class="hidden md:block">
+                        <input type="text"
+                              name="q"
+                              placeholder="Search..."
+                              value="{{ request.GET.q }}"
+                              class="bg-black bg-opacity-50 border border-gray-700 rounded px-4 py-2 focus:outline-none focus:border-emerald-500 transition">
+                    </form>
+                    {% if user.is_authenticated %}
+                    <div x-data="{ open: false }" class="relative">
+                        <button @click="open = !open" class="bg-emerald-500 hover:bg-emerald-600 px-4 py-2 rounded transition">
+                            {{ user.username }}
+                        </button>
+                        <div x-show="open"
+                             @click.away="open = false"
+                             x-transition
+                             class="absolute right-0 mt-2 w-48 bg-gray-900 rounded-lg shadow-lg py-2 border border-gray-700">
+                            <a href="{% url 'accounts:profile' user.username %}" class="block px-4 py-2 hover:bg-gray-800 transition">Profile</a>
+                            <a href="{% url 'accounts:settings' %}" class="block px-4 py-2 hover:bg-gray-800 transition">Settings</a>
+                            <a href="#" class="block px-4 py-2 hover:bg-gray-800 transition">Continue Watching</a>
+                            <a href="#" class="block px-4 py-2 hover:bg-gray-800 transition">Watch History</a>
+                            <a href="#" class="block px-4 py-2 hover:bg-gray-800 transition">My Ratings</a>
+                            <hr class="my-2 border-gray-700">
+                            <form method="post" action="{% url 'accounts:logout' %}">
+                                {% csrf_token %}
+                                <button type="submit" class="block w-full text-left px-4 py-2 hover:bg-gray-800 transition text-red-400">
+                                    Logout
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% else %}
+                    <a href="{% url 'accounts:login' %}" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded transition">
+                        Login
+                    </a>
+                    <a href="{% url 'accounts:register' %}" class="bg-emerald-500 hover:bg-emerald-600 px-4 py-2 rounded transition">
+                        Sign Up
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 pt-24 pb-12">
+        {% if messages %}
+        <div class="mb-6">
+            {% for message in messages %}
+            <div class="bg-{% if message.tags == 'error' %}red{% elif message.tags == 'success' %}emerald{% elif message.tags == 'warning' %}yellow{% else %}blue{% endif %}-500 bg-opacity-20 border border-{% if message.tags == 'error' %}red{% elif message.tags == 'success' %}emerald{% elif message.tags == 'warning' %}yellow{% else %}blue{% endif %}-500 text-white px-4 py-3 rounded mb-3">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-black bg-opacity-50 mt-16 py-12 border-t border-gray-800">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold text-emerald-500 mb-4">Spectra</h3>
+                    <p class="text-gray-400">Watch movies anytime, anywhere. Your favorite entertainment platform.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Navigation</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-emerald-500 transition">Home</a></li>
+                        <li><a href="#" class="hover:text-emerald-500 transition">Movies</a></li>
+                        <li><a href="#" class="hover:text-emerald-500 transition">Search</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Support</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-emerald-500 transition">Help Center</a></li>
+                        <li><a href="#" class="hover:text-emerald-500 transition">FAQ</a></li>
+                        <li><a href="#" class="hover:text-emerald-500 transition">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Legal</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-emerald-500 transition">Terms of Service</a></li>
+                        <li><a href="#" class="hover:text-emerald-500 transition">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:text-emerald-500 transition">Cookie Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="mt-8 pt-8 border-t border-gray-800 text-center text-gray-400">
+                <p>&copy; 2025 Spectra. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

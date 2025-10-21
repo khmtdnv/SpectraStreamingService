@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ profile_user.username }} - Profile{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <!-- Profile Header -->
+    <div class="bg-gray-900 rounded-lg shadow-xl p-8 border border-gray-800 mb-8">
+        <div class="flex items-center space-x-6">
+            <div class="w-24 h-24 bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-full flex items-center justify-center text-4xl font-bold">
+                {{ profile_user.username|first|upper }}
+            </div>
+            <div class="flex-1">
+                <h1 class="text-3xl font-bold mb-2">{{ profile_user.username }}</h1>
+                <p class="text-gray-400 mb-4">
+                    Member since {{ profile_user.date_joined|date:"F Y" }}
+                </p>
+                {% if user == profile_user %}
+                <a href="{% url 'accounts:settings' %}"
+                   class="inline-block bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-2 rounded transition">
+                    Edit Profile
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="grid grid-cols-3 gap-4 mt-8 pt-8 border-t border-gray-800">
+            <div class="text-center">
+                <p class="text-3xl font-bold text-emerald-500">{{ profile_user.rating_set.count }}</p>
+                <p class="text-gray-400 mt-1">Ratings</p>
+            </div>
+            <div class="text-center">
+                <p class="text-3xl font-bold text-emerald-500">{{ profile_user.comment_set.count }}</p>
+                <p class="text-gray-400 mt-1">Comments</p>
+            </div>
+            <div class="text-center">
+                <p class="text-3xl font-bold text-emerald-500">
+                    {{ profile_user.rating_set.aggregate.avg_score|floatformat:1|default:"N/A" }}
+                </p>
+                <p class="text-gray-400 mt-1">Avg Rating</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div x-data="{ activeTab: 'ratings' }" class="mb-8">
+        <div class="flex space-x-4 border-b border-gray-800 mb-6">
+            <button @click="activeTab = 'ratings'"
+                    :class="activeTab === 'ratings' ? 'border-emerald-500 text-emerald-500' : 'border-transparent text-gray-400'"
+                    class="px-6 py-3 border-b-2 font-semibold transition">
+                Ratings
+            </button>
+            <button @click="activeTab = 'comments'"
+                    :class="activeTab === 'comments' ? 'border-emerald-500 text-emerald-500' : 'border-transparent text-gray-400'"
+                    class="px-6 py-3 border-b-2 font-semibold transition">
+                Comments
+            </button>
+        </div>
+
+        <!-- Ratings Tab -->
+        <div x-show="activeTab === 'ratings'" class="space-y-4">
+            {% for rating in ratings %}
+            <div class="bg-gray-900 rounded-lg p-6 border border-gray-800 hover:border-gray-700 transition">
+                <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                        <a href="{% url 'movies:movie_detail' rating.movie.slug %}"
+                           class="text-xl font-semibold hover:text-emerald-500 transition">
+                            {{ rating.movie.title }}
+                        </a>
+                        <p class="text-gray-400 text-sm mt-1">{{ rating.movie.year }}</p>
+                        <div class="flex items-center mt-3">
+                            <div class="flex space-x-1">
+                                {% for i in "12345678910" %}
+                                <svg class="w-5 h-5 {% if forloop.counter <= rating.score %}text-yellow-400{% else %}text-gray-600{% endif %}"
+                                     fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                </svg>
+                                {% endfor %}
+                            </div>
+                            <span class="ml-2 text-gray-400">{{ rating.score }}/10</span>
+                        </div>
+                    </div>
+                    <span class="text-sm text-gray-500">{{ rating.created_at|date:"M d, Y" }}</span>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-12 bg-gray-900 rounded-lg border border-gray-800">
+                <p class="text-gray-400">No ratings yet</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Comments Tab -->
+        <div x-show="activeTab === 'comments'" class="space-y-4">
+            {% for comment in comments %}
+            <div class="bg-gray-900 rounded-lg p-6 border border-gray-800 hover:border-gray-700 transition">
+                <div class="flex items-start justify-between mb-3">
+                    <a href="{% url 'movies:movie_detail' comment.movie.slug %}"
+                       class="text-xl font-semibold hover:text-emerald-500 transition">
+                        {{ comment.movie.title }}
+                    </a>
+                    <span class="text-sm text-gray-500">{{ comment.created_at|date:"M d, Y" }}</span>
+                </div>
+                <p class="text-gray-300">{{ comment.text }}</p>
+                {% if comment.updated_at != comment.created_at %}
+                <p class="text-xs text-gray-500 mt-2">Edited on {{ comment.updated_at|date:"M d, Y" }}</p>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div class="text-center py-12 bg-gray-900 rounded-lg border border-gray-800">
+                <p class="text-gray-400">No comments yet</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

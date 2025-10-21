@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block title %}Search Results{% if query %} for "{{ query }}"{% endif %} - VideoHub{% endblock %}
+
+{% block content %}
+<!-- Search Header -->
+<section class="mb-12">
+    <div class="bg-gray-900 rounded-lg border border-gray-800 p-8">
+        <h1 class="text-3xl font-bold mb-4">
+            {% if query %}
+                Search Results for "{{ query }}"
+            {% else %}
+                Search Movies
+            {% endif %}
+        </h1>
+        <form method="get" action="{% url 'movies:search' %}" class="max-w-2xl">
+            <div class="flex space-x-4">
+                <input type="text"
+                       name="q"
+                       value="{{ query }}"
+                       placeholder="Search by title, director, actors..."
+                       class="flex-1 bg-black bg-opacity-50 border border-gray-700 rounded px-4 py-3 focus:outline-none focus:border-emerald-500 transition"
+                       autofocus>
+                <button type="submit"
+                        class="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded font-semibold transition">
+                    Search
+                </button>
+            </div>
+        </form>
+        {% if query %}
+        <div class="mt-4">
+            <p class="text-gray-400">
+                Found <span class="text-emerald-500 font-semibold">{{ movies|length }}</span> result{{ movies|length|pluralize }}
+            </p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Popular Categories -->
+{% if not query %}
+<section class="mb-8">
+    <h2 class="text-2xl font-bold mb-6">Browse by Category</h2>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {% for category in categories %}
+        <a href="{% url 'movies:category' category.slug %}"
+           class="bg-gray-900 rounded-lg border border-gray-800 p-6 hover:border-emerald-500 transition group">
+            <h3 class="text-xl font-semibold mb-2 group-hover:text-emerald-500 transition">{{ category.name }}</h3>
+            <p class="text-gray-400 text-sm">{{ category.get_movies_count }} movie{{ category.get_movies_count|pluralize }}</p>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- Search Results -->
+{% if query %}
+<section>
+    {% if movies %}
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+        {% for movie in movies %}
+        <a href="{% url 'movies:movie_detail' movie.slug %}" class="movie-card cursor-pointer group">
+            <div class="relative rounded-lg overflow-hidden bg-gray-900">
+                {% if movie.poster %}
+                <img src="{{ movie.poster.url }}"
+                     alt="{{ movie.title }}"
+                     class="w-full h-72 object-cover">
+                {% else %}
+                <img src="https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=400"
+                     alt="{{ movie.title }}"
+                     class="w-full h-72 object-cover">
+                {% endif %}
+                <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-70 transition flex items-center justify-center opacity-0 group-hover:opacity-100">
+                    <div class="text-center px-4">
+                        <div class="bg-emerald-500 p-3 rounded-full mb-3 inline-block group-hover:scale-110 transition">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
+                            </svg>
+                        </div>
+                        <p class="text-sm text-gray-300">{{ movie.get_duration_display }}</p>
+                    </div>
+                </div>
+                <div class="absolute top-2 right-2 bg-black bg-opacity-75 px-2 py-1 rounded text-sm">
+                    <span>{{ movie.get_average_rating|floatformat:1 }}</span> ⭐
+                </div>
+                <div class="absolute top-2 left-2 bg-emerald-500 bg-opacity-90 px-2 py-1 rounded text-xs font-semibold">
+                    {{ movie.category.name }}
+                </div>
+            </div>
+            <div class="mt-2">
+                <h3 class="font-semibold truncate group-hover:text-emerald-500 transition">{{ movie.title }}</h3>
+                <p class="text-sm text-gray-400">{{ movie.year }}</p>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-12 bg-gray-900 rounded-lg border border-gray-800">
+        <svg class="w-20 h-20 text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+        <h2 class="text-2xl font-bold mb-2">No Results Found</h2>
+        <p class="text-gray-400 mb-6">
+            We couldn't find any movies matching "{{ query }}"
+        </p>
+        <div class="space-y-4">
+            <p class="text-gray-400">Try:</p>
+            <ul class="text-gray-400 space-y-2">
+                <li>• Checking your spelling</li>
+                <li>• Using different keywords</li>
+                <li>• Searching for a specific movie title or actor</li>
+            </ul>
+            <a href="{% url 'movies:home' %}"
+               class="inline-block bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded transition mt-6">
+                Browse All Movies
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</section>
+{% endif %}
+
+<!-- Popular Movies Section (when no search) -->
+{% if not query %}
+<section class="mt-12">
+    <h2 class="text-2xl font-bold mb-6">Popular Movies</h2>
+    <p class="text-gray-400 mb-6">Start exploring our collection of amazing movies</p>
+    <a href="{% url 'movies:home' %}"
+       class="inline-block bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded transition">
+        View All Movies
+    </a>
+</section>
+{% endif %}
+{% endblock %}

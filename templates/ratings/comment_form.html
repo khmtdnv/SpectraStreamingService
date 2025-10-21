@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if is_update %}Edit{% else %}Add{% endif %} Comment - {{ movie.title }} - VideoHub{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="bg-gray-900 rounded-lg shadow-xl p-8 border border-gray-800">
+        <h2 class="text-3xl font-bold text-center mb-6 text-emerald-500">
+            {% if is_update %}Edit Your Comment{% else %}Add a Comment{% endif %}
+        </h2>
+
+        <!-- Movie Info -->
+        <div class="flex items-center space-x-4 mb-8 pb-6 border-b border-gray-800">
+            {% if movie.poster %}
+            <img src="{{ movie.poster.url }}"
+                 alt="{{ movie.title }}"
+                 class="w-20 h-28 object-cover rounded">
+            {% endif %}
+            <div>
+                <h3 class="text-xl font-semibold">{{ movie.title }}</h3>
+                <p class="text-gray-400">{{ movie.year }} • {{ movie.category.name }}</p>
+            </div>
+        </div>
+
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="bg-red-500 bg-opacity-20 border border-red-500 text-white px-4 py-3 rounded">
+                {% for error in form.non_field_errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div>
+                <label for="{{ form.text.id_for_label }}" class="block text-lg font-medium mb-3">
+                    Your Comment
+                </label>
+                <textarea name="{{ form.text.name }}"
+                          id="{{ form.text.id_for_label }}"
+                          rows="6"
+                          class="w-full bg-black bg-opacity-50 border border-gray-700 rounded px-4 py-3 focus:outline-none focus:border-emerald-500 transition resize-none"
+                          placeholder="Share your thoughts about this movie..."
+                          required>{{ form.text.value|default:'' }}</textarea>
+
+                {% if form.text.errors %}
+                <p class="mt-1 text-sm text-red-400">{{ form.text.errors.0 }}</p>
+                {% endif %}
+
+                <p class="mt-1 text-xs text-gray-500">Minimum 10 characters, maximum 1000 characters</p>
+            </div>
+
+            <div class="flex space-x-4">
+                <button type="submit"
+                        class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 rounded transition">
+                    {% if is_update %}Update Comment{% else %}Post Comment{% endif %}
+                </button>
+                <a href="{% url 'movies:movie_detail' movie.slug %}"
+                   class="flex-1 text-center bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 rounded transition">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

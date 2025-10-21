@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Comment - VideoHub{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto mt-12">
+    <div class="bg-gray-900 rounded-lg shadow-xl p-8 border border-gray-800">
+        <div class="text-center">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-red-500 bg-opacity-20 rounded-full mb-4">
+                <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+            </div>
+            <h2 class="text-3xl font-bold mb-4 text-red-500">Delete Comment?</h2>
+            <p class="text-gray-400 mb-2">
+                Are you sure you want to delete your comment on
+            </p>
+            <p class="text-xl font-semibold mb-6">{{ comment.movie.title }}?</p>
+            <div class="bg-gray-800 bg-opacity-50 border border-gray-700 rounded p-4 mb-6 text-left">
+                <p class="text-gray-300 italic">"{{ comment.text|truncatewords:30 }}"</p>
+            </div>
+            <p class="text-gray-400 mb-8">
+                This action cannot be undone.
+            </p>
+
+            <form method="post" class="space-y-4">
+                {% csrf_token %}
+                <div class="flex space-x-4">
+                    <button type="submit"
+                            class="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-3 rounded transition">
+                        Yes, Delete
+                    </button>
+                    <a href="{% url 'movies:movie_detail' comment.movie.slug %}"
+                       class="flex-1 text-center bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 rounded transition">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

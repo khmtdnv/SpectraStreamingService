@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ category.name }} Movies - VideoHub{% endblock %}
+
+{% block content %}
+<!-- Category Header -->
+<section class="mb-12">
+    <div class="bg-gradient-to-r from-emerald-900 to-gray-900 rounded-lg p-8 border border-gray-800">
+        <div class="max-w-3xl">
+            <h1 class="text-4xl font-bold mb-4">{{ category.name }}</h1>
+            {% if category.description %}
+            <p class="text-gray-300 text-lg">{{ category.description }}</p>
+            {% endif %}
+            <div class="mt-6 flex items-center space-x-6 text-gray-400">
+                <div>
+                    <span class="text-2xl font-bold text-emerald-500">{{ page_obj.paginator.count }}</span>
+                    <span class="ml-2">movie{{ page_obj.paginator.count|pluralize }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- All Categories Navigation -->
+<section class="mb-8">
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-semibold">Browse by Category</h2>
+        <a href="{% url 'movies:home' %}" class="text-emerald-500 hover:text-emerald-400 transition text-sm">
+            View All Movies →
+        </a>
+    </div>
+    <div class="flex flex-wrap gap-3">
+        {% for cat in categories %}
+        <a href="{% url 'movies:category' cat.slug %}"
+           class="category-btn px-6 py-2 rounded-full border border-gray-700 hover:border-emerald-500 transition {% if cat.slug == category.slug %}active{% endif %}">
+            {{ cat.name }}
+        </a>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Sort Options -->
+<section class="mb-8">
+    <div class="bg-gray-900 rounded-lg border border-gray-800 p-4">
+        <form method="get" class="flex flex-wrap gap-4 items-center">
+            <label class="text-gray-400 text-sm">Sort by:</label>
+            <select name="sort"
+                    onchange="this.form.submit()"
+                    class="bg-black bg-opacity-50 border border-gray-700 rounded px-4 py-2 focus:outline-none focus:border-emerald-500 transition">
+                <option value="-created_at" {% if request.GET.sort == '-created_at' or not request.GET.sort %}selected{% endif %}>
+                    Newest First
+                </option>
+                <option value="created_at" {% if request.GET.sort == 'created_at' %}selected{% endif %}>
+                    Oldest First
+                </option>
+                <option value="title" {% if request.GET.sort == 'title' %}selected{% endif %}>
+                    Title (A-Z)
+                </option>
+                <option value="-title" {% if request.GET.sort == '-title' %}selected{% endif %}>
+                    Title (Z-A)
+                </option>
+                <option value="-year" {% if request.GET.sort == '-year' %}selected{% endif %}>
+                    Year (Newest)
+                </option>
+                <option value="year" {% if request.GET.sort == 'year' %}selected{% endif %}>
+                    Year (Oldest)
+                </option>
+                <option value="-views_count" {% if request.GET.sort == '-views_count' %}selected{% endif %}>
+                    Most Popular
+                </option>
+            </select>
+        </form>
+    </div>
+</section>
+
+<!-- Movies Grid -->
+<section>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+        {% for movie in movies %}
+        <a href="{% url 'movies:movie_detail' movie.slug %}" class="movie-card cursor-pointer group">
+            <div class="relative rounded-lg overflow-hidden bg-gray-900">
+                {% if movie.poster %}
+                <img src="{{ movie.poster.url }}"
+                     alt="{{ movie.title }}"
+                     class="w-full h-72 object-cover">
+                {% else %}
+                <img src="https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=400"
+                     alt="{{ movie.title }}"
+                     class="w-full h-72 object-cover">
+                {% endif %}
+                <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-70 transition flex items-center justify-center opacity-0 group-hover:opacity-100">
+                    <div class="text-center px-4">
+                        <div class="bg-emerald-500 p-3 rounded-full mb-3 inline-block group-hover:scale-110 transition">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
+                            </svg>
+                        </div>
+                        <p class="text-sm text-gray-300">{{ movie.get_duration_display }}</p>
+                    </div>
+                </div>
+                <div class="absolute top-2 right-2 bg-black bg-opacity-75 px-2 py-1 rounded text-sm">
+                    <span>{{ movie.get_average_rating|floatformat:1 }}</span> ⭐
+                </div>
+            </div>
+            <div class="mt-2">
+                <h3 class="font-semibold truncate group-hover:text-emerald-500 transition">{{ movie.title }}</h3>
+                <p class="text-sm text-gray-400">{{ movie.year }}</p>
+            </div>
+        </a>
+        {% empty %}
+        <div class="col-span-full text-center py-12 bg-gray-900 rounded-lg border border-gray-800">
+            <svg class="w-16 h-16 text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"></path>
+            </svg>
+            <p class="text-gray-400 text-xl mb-4">No movies found in this category</p>
+            <a href="{% url 'movies:home' %}"
+               class="inline-block bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded transition">
+                Browse All Movies
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="flex justify-center mt-12 space-x-2">
+        {% if page_obj.has_previous %}
+        <a href="?page=1{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
+           class="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded transition">
+            First
+        </a>
+        <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
+           class="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded transition">
+            Previous
+        </a>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+        <span class="px-4 py-2 bg-emerald-500 rounded font-semibold">{{ num }}</span>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+        <a href="?page={{ num }}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
+           class="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded transition">
+            {{ num }}
+        </a>
+        {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
+           class="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded transition">
+            Next
+        </a>
+        <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
+           class="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded transition">
+            Last
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</section>
+{% endblock %}
