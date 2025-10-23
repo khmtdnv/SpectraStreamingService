@@ -4,7 +4,6 @@ from django.utils.translation import gettext_lazy as _
 
 from .models import Category, Movie
 
-
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
 
