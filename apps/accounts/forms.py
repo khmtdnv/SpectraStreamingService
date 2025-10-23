@@ -13,13 +13,6 @@ User = get_user_model()
 
 
 class UserRegistrationForm(UserCreationForm):
-    """
-    Form for user registration.
-    
-    Extends Django's UserCreationForm with email field
-    and custom validation.
-    """
-    
     email = forms.EmailField(
         label=_('Email'),
         max_length=254,
@@ -68,7 +61,6 @@ class UserRegistrationForm(UserCreationForm):
         fields = ('username', 'email', 'password1', 'password2')
     
     def clean_email(self) -> str:
-        """Validate that the email is unique."""
         email = self.cleaned_data.get('email')
         if User.objects.filter(email=email).exists():
             raise ValidationError(
@@ -78,7 +70,6 @@ class UserRegistrationForm(UserCreationForm):
         return email.lower()
     
     def clean_username(self) -> str:
-        """Validate username."""
         username = self.cleaned_data.get('username')
         if User.objects.filter(username=username).exists():
             raise ValidationError(
@@ -88,7 +79,6 @@ class UserRegistrationForm(UserCreationForm):
         return username
     
     def save(self, commit: bool = True) -> User:
-        """Save the user with email verification status set to False."""
         user = super().save(commit=False)
         user.email = self.cleaned_data['email'].lower()
         user.email_verified = False
@@ -98,12 +88,6 @@ class UserRegistrationForm(UserCreationForm):
 
 
 class UserLoginForm(AuthenticationForm):
-    """
-    Form for user login.
-    
-    Allows login with either username or email.
-    """
-    
     username = forms.CharField(
         label=_('Username or Email'),
         max_length=254,
@@ -132,10 +116,8 @@ class UserLoginForm(AuthenticationForm):
     )
     
     def clean_username(self) -> str:
-        """Allow login with email or username."""
         username_or_email = self.cleaned_data.get('username')
         
-        # Try to find user by email
         if '@' in username_or_email:
             try:
                 user = User.objects.get(email=username_or_email.lower())
@@ -147,12 +129,6 @@ class UserLoginForm(AuthenticationForm):
 
 
 class CustomPasswordResetForm(PasswordResetForm):
-    """
-    Custom password reset form.
-    
-    Sends password reset email asynchronously using Celery.
-    """
-    
     email = forms.EmailField(
         label=_('Email'),
         max_length=254,
@@ -174,12 +150,6 @@ class CustomPasswordResetForm(PasswordResetForm):
 
 
 class CustomSetPasswordForm(SetPasswordForm):
-    """
-    Custom set password form.
-    
-    Used for setting a new password after password reset.
-    """
-    
     new_password1 = forms.CharField(
         label=_('New Password'),
         strip=False,
@@ -204,10 +174,6 @@ class CustomSetPasswordForm(SetPasswordForm):
 
 
 class UserProfileUpdateForm(forms.ModelForm):
-    """
-    Form for updating user profile information.
-    """
-    
     first_name = forms.CharField(
         label=_('First Name'),
         max_length=150,
@@ -253,18 +219,15 @@ class UserProfileUpdateForm(forms.ModelForm):
         fields = ('first_name', 'last_name', 'bio', 'avatar')
     
     def clean_avatar(self):
-        """Validate avatar file size and type."""
         avatar = self.cleaned_data.get('avatar')
         
         if avatar:
-            # Check file size (max 5MB)
             if avatar.size > 5 * 1024 * 1024:
                 raise ValidationError(
                     _('Avatar file size cannot exceed 5MB.'),
                     code='file_too_large'
                 )
             
-            # Check file type
             if not avatar.content_type.startswith('image/'):
                 raise ValidationError(
                     _('Only image files are allowed.'),

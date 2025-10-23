@@ -1,16 +1,8 @@
-# apps/accounts/managers.py
-
 from django.contrib.auth.models import UserManager as BaseUserManager
 from django.db.models import QuerySet
 
 
 class UserManager(BaseUserManager):
-    """
-    Custom manager for User model.
-
-    Extends Django's UserManager with additional methods.
-    """
-
     def create_user(self, username: str, email: str, password: str = None, **extra_fields):
         if not email:
             raise ValueError('The Email field must be set')

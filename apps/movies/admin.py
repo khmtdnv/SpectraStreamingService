@@ -1,4 +1,3 @@
-# apps/movies/admin.py
 from django.contrib import admin
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
@@ -38,7 +37,6 @@ class CategoryAdmin(admin.ModelAdmin):
     readonly_fields = ('created_at', 'updated_at')
 
     def movies_count(self, obj):
-        """Display number of movies in category."""
         return obj.get_movies_count()
 
     movies_count.short_description = _('Movies Count')
@@ -103,12 +101,10 @@ class MovieAdmin(admin.ModelAdmin):
     readonly_fields = ('created_at', 'updated_at', 'views_count')
 
     def get_queryset(self, request):
-        """Optimize queryset with select_related."""
         qs = super().get_queryset(request)
         return qs.select_related('category')
 
     def poster_preview(self, obj):
-        """Display poster preview in admin."""
         if obj.poster:
             return format_html(
                 '<img src="{}" width="50" height="75" style="object-fit: cover;" />',
@@ -119,13 +115,11 @@ class MovieAdmin(admin.ModelAdmin):
     poster_preview.short_description = _('Poster')
 
     def duration_display(self, obj):
-        """Display formatted duration."""
         return obj.get_duration_display()
 
     duration_display.short_description = _('Duration')
 
     def average_rating(self, obj):
-        """Display average rating."""
         avg = obj.get_average_rating()
         if avg > 0:
             return format_html(
@@ -137,7 +131,6 @@ class MovieAdmin(admin.ModelAdmin):
     average_rating.short_description = _('Avg Rating')
 
     def ratings_count(self, obj):
-        """Display number of ratings."""
         return obj.get_ratings_count()
 
     ratings_count.short_description = _('Ratings')

@@ -1,9 +1,3 @@
-# apps/player/views.py
-
-"""
-Views for player application.
-"""
-
 from typing import Any, Dict
 
 from django.contrib.auth.decorators import login_required
@@ -20,20 +14,14 @@ from .models import WatchHistory
 
 
 class VideoPlayerView(View):
-    """
-    View for displaying video player.
-    """
-
     template_name = 'player/video_player.html'
 
     def get(self, request: HttpRequest, slug: str) -> HttpResponse:
-        """Display video player for a movie."""
         movie = get_object_or_404(
             Movie.objects.select_related('category'),
             slug=slug
         )
 
-        # Get user's watch progress if authenticated
         watch_history = None
         if request.user.is_authenticated:
             watch_history = WatchHistory.objects.filter(
@@ -51,22 +39,15 @@ class VideoPlayerView(View):
 
 
 class StreamVideoView(View):
-    """
-    View for streaming video files with range support.
-    """
-
     def get(self, request: HttpRequest, slug: str) -> FileResponse:
-        """Stream video file with range support."""
         movie = get_object_or_404(Movie, slug=slug)
 
         if not movie.video_file:
             raise Http404("Video file not found")
 
-        # Get the video file
         video_file = movie.video_file
         file_size = video_file.size
 
-        # Handle range requests for seeking
         range_header = request.META.get('HTTP_RANGE', '').strip()
         range_match = None
 
@@ -107,9 +88,6 @@ class StreamVideoView(View):
 @require_POST
 @login_required
 def save_progress(request: HttpRequest) -> JsonResponse:
-    """
-    Save user's video playback progress.
-    """
     try:
         data = json.loads(request.body)
         movie_id = data.get('movie_id')
@@ -118,14 +96,13 @@ def save_progress(request: HttpRequest) -> JsonResponse:
 
         movie = get_object_or_404(Movie, id=movie_id)
 
-        # Update or create watch history
         watch_history, created = WatchHistory.objects.update_or_create(
             user=request.user,
             movie=movie,
             defaults={
                 'progress': int(progress),
                 'duration': int(duration),
-                'completed': progress >= duration * 0.9  # 90% watched = completed
+                'completed': progress >= duration * 0.9 
             }
         )
 
@@ -143,17 +120,12 @@ def save_progress(request: HttpRequest) -> JsonResponse:
 
 
 class WatchHistoryListView(LoginRequiredMixin, ListView):
-    """
-    View for displaying user's watch history.
-    """
-
     model = WatchHistory
     template_name = 'player/watch_history.html'
     context_object_name = 'history'
     paginate_by = 20
 
     def get_queryset(self):
-        """Get watch history for current user."""
         return WatchHistory.objects.filter(
             user=self.request.user
         ).select_related('movie', 'movie__category').order_by('-last_watched')
@@ -161,9 +133,6 @@ class WatchHistoryListView(LoginRequiredMixin, ListView):
 
 @login_required
 def continue_watching(request: HttpRequest) -> HttpResponse:
-    """
-    View for displaying continue watching section.
-    """
     history = WatchHistory.objects.filter(
         user=request.user,
         completed=False,

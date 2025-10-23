@@ -1,4 +1,3 @@
-# apps/ratings/admin.py
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 
@@ -44,7 +43,6 @@ class RatingAdmin(admin.ModelAdmin):
     )
 
     def get_queryset(self, request):
-        """Optimize queryset with select_related."""
         qs = super().get_queryset(request)
         return qs.select_related('user', 'movie')
 
@@ -89,18 +87,15 @@ class CommentAdmin(admin.ModelAdmin):
     )
 
     def get_queryset(self, request):
-        """Optimize queryset with select_related."""
         qs = super().get_queryset(request)
         return qs.select_related('user', 'movie')
 
     def text_preview(self, obj):
-        """Display preview of comment text."""
         return obj.text[:50] + '...' if len(obj.text) > 50 else obj.text
 
     text_preview.short_description = _('Comment Preview')
 
     def is_edited_display(self, obj):
-        """Display if comment was edited."""
         return '✓' if obj.is_edited() else '✗'
 
     is_edited_display.short_description = _('Edited')

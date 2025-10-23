@@ -1,9 +1,3 @@
-# apps/player/admin.py
-
-"""
-Admin configuration for player application.
-"""
-
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 
@@ -12,8 +6,6 @@ from .models import WatchHistory
 
 @admin.register(WatchHistory)
 class WatchHistoryAdmin(admin.ModelAdmin):
-    """Admin interface for WatchHistory model."""
-
     list_display = (
         'user',
         'movie',
@@ -54,12 +46,10 @@ class WatchHistoryAdmin(admin.ModelAdmin):
     )
 
     def get_queryset(self, request):
-        """Optimize queryset with select_related."""
         qs = super().get_queryset(request)
         return qs.select_related('user', 'movie')
 
     def progress_display(self, obj):
-        """Display progress as percentage."""
         return f"{obj.get_progress_percentage()}%"
 
     progress_display.short_description = _('Progress')

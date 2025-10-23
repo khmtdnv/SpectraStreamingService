@@ -1,4 +1,3 @@
-# apps/ratings/views.py
 from typing import Any
 
 from django.contrib import messages
@@ -128,12 +127,10 @@ class UserRatingsListView(LoginRequiredMixin, ListView):
     paginate_by = 20
 
     def get_queryset(self):
-        """Get ratings for current user."""
         queryset = Rating.objects.filter(
             user=self.request.user
         ).select_related('movie', 'movie__category')
 
-        # Apply sorting
         sort_by = self.request.GET.get('sort', '-created_at')
         valid_sorts = [
             '-created_at', 'created_at',
@@ -144,7 +141,6 @@ class UserRatingsListView(LoginRequiredMixin, ListView):
         if sort_by in valid_sorts:
             queryset = queryset.order_by(sort_by)
 
-        # Apply filtering
         filter_by = self.request.GET.get('filter')
         if filter_by:
             if filter_by == '10':

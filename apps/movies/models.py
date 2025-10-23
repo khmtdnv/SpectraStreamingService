@@ -1,9 +1,3 @@
-# apps/movies/models.py
-
-"""
-Models for movies application.
-"""
-
 from django.db import models
 from django.urls import reverse
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -14,12 +8,6 @@ from apps.core.utils import generate_unique_slug
 
 
 class Category(models.Model):
-    """
-    Category model for organizing movies.
-
-    Categories are managed only through the admin panel.
-    """
-
     name = models.CharField(
         _('name'),
         max_length=100,
@@ -66,31 +54,21 @@ class Category(models.Model):
         ]
 
     def __str__(self) -> str:
-        """Return string representation of the category."""
         return self.name
 
     def get_absolute_url(self) -> str:
-        """Return the URL for the category."""
         return reverse('movies:category', kwargs={'slug': self.slug})
 
     def save(self, *args, **kwargs):
-        """Generate slug if not provided."""
         if not self.slug:
             self.slug = generate_unique_slug(Category, self.name)
         super().save(*args, **kwargs)
 
     def get_movies_count(self) -> int:
-        """Return the number of movies in this category."""
         return self.movies.count()
 
 
 class Movie(models.Model):
-    """
-    Movie model for storing film information.
-
-    Movies are managed only through the admin panel.
-    """
-
     RATING_CHOICES = [
         ('G', 'G - General Audiences'),
         ('PG', 'PG - Parental Guidance Suggested'),
@@ -212,39 +190,31 @@ class Movie(models.Model):
         ]
 
     def __str__(self) -> str:
-        """Return string representation of the movie."""
         return f"{self.title} ({self.year})"
 
     def get_absolute_url(self) -> str:
-        """Return the URL for the movie."""
         return reverse('movies:movie_detail', kwargs={'slug': self.slug})
 
     def save(self, *args, **kwargs):
-        """Generate slug if not provided."""
         if not self.slug:
             self.slug = generate_unique_slug(Movie, self.title)
         super().save(*args, **kwargs)
 
     def get_average_rating(self) -> float:
-        """Calculate and return the average rating."""
         result = self.ratings.aggregate(avg_rating=Avg('score'))
         return round(result['avg_rating'], 1) if result['avg_rating'] else 0
 
     def get_ratings_count(self) -> int:
-        """Return the number of ratings."""
         return self.ratings.count()
 
     def get_comments_count(self) -> int:
-        """Return the number of comments."""
         return self.comments.count()
 
     def increment_views(self) -> None:
-        """Increment the views counter."""
         self.views_count += 1
         self.save(update_fields=['views_count'])
 
     def get_duration_display(self) -> str:
-        """Return formatted duration (e.g., '2h 30m')."""
         hours = self.duration // 60
         minutes = self.duration % 60
         if hours > 0:
@@ -252,7 +222,6 @@ class Movie(models.Model):
         return f"{minutes}m"
 
     def get_actors_list(self) -> list:
-        """Return list of actors."""
         if self.actors:
             return [actor.strip() for actor in self.actors.split(',')]
         return []

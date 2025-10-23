@@ -1,9 +1,3 @@
-# apps/movies/views.py
-
-"""
-Views for movies application.
-"""
-
 from typing import Any, Dict
 
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -16,32 +10,22 @@ from .models import Category, Movie
 
 
 class MovieListView(ListView):
-    """
-    View for displaying list of movies with filtering and pagination.
-    """
-
     model = Movie
     template_name = 'movies/home.html'
     context_object_name = 'movies'
     paginate_by = 24
 
     def get_queryset(self) -> QuerySet:
-        """
-        Get filtered and sorted queryset of movies.
-        """
         queryset = Movie.objects.select_related('category')
 
-        # Filter by category
         category_slug = self.request.GET.get('category')
         if category_slug:
             queryset = queryset.filter(category__slug=category_slug)
 
-        # Filter by year
         year = self.request.GET.get('year')
         if year and year.isdigit():
             queryset = queryset.filter(year=int(year))
 
-        # Search query
         search_query = self.request.GET.get('q')
         if search_query:
             queryset = queryset.filter(
@@ -51,7 +35,6 @@ class MovieListView(ListView):
                 Q(actors__icontains=search_query)
             )
 
-        # Sort
         sort_by = self.request.GET.get('sort', '-created_at')
         valid_sorts = [
             '-created_at', 'created_at',
@@ -68,13 +51,10 @@ class MovieListView(ListView):
         return queryset
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        """Add additional context data."""
         context = super().get_context_data(**kwargs)
 
-        # Add all categories
         context['categories'] = Category.objects.all()
 
-        # Add selected category if filtering
         category_slug = self.request.GET.get('category')
         if category_slug:
             context['selected_category'] = get_object_or_404(
@@ -82,10 +62,8 @@ class MovieListView(ListView):
                 slug=category_slug
             )
 
-        # Add search query to context
         context['search_query'] = self.request.GET.get('q', '')
 
-        # Add available years for filtering
         context['available_years'] = Movie.objects.values_list(
             'year',
             flat=True
@@ -95,39 +73,29 @@ class MovieListView(ListView):
 
 
 class MovieDetailView(DetailView):
-    """
-    View for displaying single movie details.
-    """
-
     model = Movie
     template_name = 'movies/movie_detail.html'
     context_object_name = 'movie'
     slug_url_kwarg = 'slug'
 
     def get_queryset(self) -> QuerySet:
-        """Optimize queryset with related data."""
         return Movie.objects.select_related('category')
 
     def get_object(self, queryset=None) -> Movie:
-        """Get movie object and increment views counter."""
         movie = super().get_object(queryset)
 
-        # Increment views count (only for non-authenticated admin users)
         if not self.request.user.is_staff:
             movie.increment_views()
 
         return movie
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        """Add additional context data."""
         context = super().get_context_data(**kwargs)
         movie = self.object
 
-        # Add rating statistics
         context['average_rating'] = movie.get_average_rating()
         context['ratings_count'] = movie.get_ratings_count()
 
-        # Add user's rating if authenticated
         if self.request.user.is_authenticated:
             try:
                 from apps.ratings.models import Rating
@@ -139,7 +107,6 @@ class MovieDetailView(DetailView):
             except Rating.DoesNotExist:
                 context['user_rating'] = None
 
-            # Check if user has commented
             try:
                 from apps.ratings.models import Comment
                 user_comment = Comment.objects.get(
@@ -150,10 +117,8 @@ class MovieDetailView(DetailView):
             except Comment.DoesNotExist:
                 context['user_comment'] = None
 
-        # Add comments
         context['comments'] = movie.comments.select_related('user').order_by('-created_at')[:10]
 
-        # Add related movies (same category)
         context['related_movies'] = Movie.objects.filter(
             category=movie.category
         ).exclude(
@@ -164,24 +129,18 @@ class MovieDetailView(DetailView):
 
 
 class CategoryMoviesView(ListView):
-    """
-    View for displaying movies in a specific category.
-    """
-
     model = Movie
     template_name = 'movies/category_movies.html'
     context_object_name = 'movies'
     paginate_by = 24
 
     def get_queryset(self) -> QuerySet:
-        """Get movies filtered by category."""
         self.category = get_object_or_404(Category, slug=self.kwargs['slug'])
         return Movie.objects.filter(
             category=self.category
         ).select_related('category')
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        """Add category to context."""
         context = super().get_context_data(**kwargs)
         context['category'] = self.category
         context['categories'] = Category.objects.all()
@@ -189,9 +148,6 @@ class CategoryMoviesView(ListView):
 
 
 def search_movies(request: HttpRequest) -> HttpResponse:
-    """
-    View for searching movies.
-    """
     query = request.GET.get('q', '')
     movies = []
 

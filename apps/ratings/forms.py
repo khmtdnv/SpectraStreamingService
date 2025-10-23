@@ -1,4 +1,3 @@
-# apps/ratings/forms.py
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
@@ -37,7 +36,6 @@ class RatingForm(forms.ModelForm):
         return score
 
     def save(self, commit=True):
-        """Save the rating with user and movie."""
         rating = super().save(commit=False)
         if self.user:
             rating.user = self.user
@@ -49,10 +47,6 @@ class RatingForm(forms.ModelForm):
 
 
 class CommentForm(forms.ModelForm):
-    """
-    Form for creating/updating movie comments.
-    """
-
     text = forms.CharField(
         label=_('Comment'),
         max_length=1000,
@@ -73,7 +67,6 @@ class CommentForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
     def clean_text(self):
-        """Validate comment text."""
         text = self.cleaned_data.get('text')
         if len(text.strip()) < 10:
             raise ValidationError(
@@ -83,7 +76,6 @@ class CommentForm(forms.ModelForm):
         return text.strip()
 
     def save(self, commit=True):
-        """Save the comment with user and movie."""
         comment = super().save(commit=False)
         if self.user:
             comment.user = self.user

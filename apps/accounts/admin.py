@@ -7,12 +7,6 @@ from .models import User, EmailVerificationToken, PasswordResetToken
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
-    """
-    Custom admin interface for User model.
-    
-    Extends Django's UserAdmin with custom fields and filters.
-    """
-    
     list_display = (
         'username', 
         'email', 
@@ -80,10 +74,6 @@ class UserAdmin(BaseUserAdmin):
 
 @admin.register(EmailVerificationToken)
 class EmailVerificationTokenAdmin(admin.ModelAdmin):
-    """
-    Admin interface for EmailVerificationToken model.
-    """
-    
     list_display = (
         'user',
         'token',
@@ -109,10 +99,6 @@ class EmailVerificationTokenAdmin(admin.ModelAdmin):
 
 @admin.register(PasswordResetToken)
 class PasswordResetTokenAdmin(admin.ModelAdmin):
-    """
-    Admin interface for PasswordResetToken model.
-    """
-    
     list_display = (
         'user',
         'token',
@@ -131,6 +117,5 @@ class PasswordResetTokenAdmin(admin.ModelAdmin):
     ordering = ('-created_at',)
     
     def get_queryset(self, request):
-        """Optimize queryset with select_related."""
         qs = super().get_queryset(request)
         return qs.select_related('user')

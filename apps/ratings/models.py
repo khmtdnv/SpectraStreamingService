@@ -1,4 +1,3 @@
-# apps/ratings/models.py
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
@@ -48,18 +47,10 @@ class Rating(models.Model):
         ]
 
     def __str__(self) -> str:
-        """Return string representation of the rating."""
         return f"{self.user.username} rated {self.movie.title}: {self.score}/10"
 
 
 class Comment(models.Model):
-    """
-    Comment model for movie comments.
-
-    Users can leave one comment per movie.
-    Comments can be edited after posting.
-    """
-
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -101,9 +92,7 @@ class Comment(models.Model):
         ]
 
     def __str__(self) -> str:
-        """Return string representation of the comment."""
         return f"Comment by {self.user.username} on {self.movie.title}"
 
     def is_edited(self) -> bool:
-        """Check if the comment has been edited."""
         return self.updated_at > self.created_at
